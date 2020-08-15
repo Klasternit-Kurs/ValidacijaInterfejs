@@ -7,16 +7,19 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
 	<StackPanel>
+		<Label FontSize="24">Ime</Label>
 		<TextBox FontSize="24" >
 			<TextBox.Text>
-				<Binding Path="Ime" UpdateSourceTrigger="PropertyChanged">
+				<Binding Path="Ime" UpdateSourceTrigger="PropertyChanged" ValidatesOnDataErrors="True">
 					<Binding.ValidationRules>
-						<local:ValidatorZaIme/>
+						<!--<local:ValidatorZaIme/>-->
 					</Binding.ValidationRules>
 				</Binding>
 			</TextBox.Text>
 		</TextBox>
+		<Label FontSize="24">Prezime</Label>
 	    <TextBox FontSize="24" Text="{Binding Prezime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
+		<Label FontSize="24">Starost</Label>
 		<TextBox FontSize="24" Text="{Binding Starost, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
 	</StackPanel>
 </Window>

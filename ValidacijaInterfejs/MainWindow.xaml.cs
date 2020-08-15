@@ -42,7 +42,7 @@ namespace ValidacijaInterfejs
 			set
 			{
 				_ime = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Ime"));
+				PropChange("Ime");
 			}
 		}
 
@@ -53,7 +53,7 @@ namespace ValidacijaInterfejs
 			set
 			{
 				_prezime = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Prezime"));
+				PropChange("Prezime");
 			}
 		}
 
@@ -64,23 +64,74 @@ namespace ValidacijaInterfejs
 			set
 			{
 				_starost = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Starost"));
+				PropChange("Starost");
 			}
 		}
 
+		public void PropChange(string prop)
+		{
+			if (Validator == null)
+				Validator = new FValidatorOsoba();
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+		}
 
 
-		//Mozemo da ignorisemo, ne koristi se u wpfu :) 
-		public string Error => throw new NotImplementedException();
+		
+		public string Error
+		{
+			get
+			{
+				if (Validator != null)
+				{
+					var err = Validator.Validate(this);
+					if (!err.IsValid)
+					{
+						string greske = "";
 
-		private FValidatorOsoba Validator = new FValidatorOsoba();
+						err.Errors.ToList().ForEach(g => greske.Concat(g.ErrorMessage + " "));
+
+						//Linija iznad radi isto sto i ovo :) 
+						/*foreach (var g in err.Errors)
+						{
+							greske.Concat(g.ErrorMessage + " ");
+						}*/
+
+						return err.Errors.FirstOrDefault().ErrorMessage;
+					}
+				}
+				return null;
+			}
+		}
+
+		private FValidatorOsoba Validator;// = new FValidatorOsoba();
 
 		public void Foo()
 		{
 			var rez = Validator.Validate(this);
-
+			foreach(var err in rez.Errors)
+			{
+				//err.PropertyName
+			}
 			
 
+		}
+
+		public string this[string columnName]
+		{
+			get
+			{
+				if (Validator != null)
+				{
+					var rez = Validator.Validate(this);
+
+					foreach (var err in rez.Errors)
+					{
+						if (err.PropertyName == columnName)
+							return err.ErrorMessage;
+					}	
+				}
+				return null;
+			}
 		}
 
 		/*public string this[string columnName]
@@ -143,13 +194,11 @@ namespace ValidacijaInterfejs
 		{
 			RuleFor(o => o.Ime).NotNull().WithMessage("Prazno")
 				.Length(3, 50).WithMessage("Losa duzina");
-			RuleFor(o => o.Starost).LessThan(1).WithMessage("Nope!");
-			RuleFor(o => o.Prezime).Must(p => Test(p));
+			RuleFor(o => o.Starost).GreaterThan(0).WithMessage("Nope!");
+			RuleFor(o => o.Prezime).Must(Test);
 		}
 
-		public bool Test(string x)
-		{
-			return false;
-		}
+		public bool Test(string x) => !string.IsNullOrEmpty(x);
+				
 	}
 }
